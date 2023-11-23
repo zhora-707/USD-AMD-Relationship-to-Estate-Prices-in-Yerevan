@@ -1,0 +1,299 @@
+---
+title: "Real Estate Prices in Yerevan"
+author: "Zhora Stepanyan, Sergey Tovmasyan, Erik Shekunts"
+date: "December 10th, 2022"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(magrittr)
+library(ggplot2)
+library(plotly)
+library(ggthemes)
+library(viridis)
+library(RColorBrewer)
+library(data.table)
+library(summarytools)
+library(parameters)
+library(DT)
+library(readxl)
+library(ggthemes)
+library(knitr)
+```
+
+
+
+
+
+
+```{r warning=FALSE, echo=FALSE}
+real_estate <- read.csv("project.csv")
+real_estate$Date<- as.Date(real_estate$Date, format = "%d.%m.%y")
+
+
+dollar <- read_excel("dollar.xlsx")
+dollar$Month<- as.Date(dollar$Month, format = "%d.%m.%y")
+rate <- read_excel("Rate.xlsx")
+
+rate$Date<- as.Date(rate$Date, format = "%d.%m.%y")
+dollar$Monthly <- as.numeric(dollar$Monthly)
+
+average <- read.csv("average.csv",skip = 1, head = FALSE, sep=",")
+average$V1<- as.Date(average$V1, format = "%d.%m.%y")
+average$V3 = dollar$Monthly
+average$V3 <- as.numeric(average$V3)
+average$V2 <- as.numeric(average$V2)
+
+average_usd <- read.csv("average_$.csv")
+average_usd$Date<- as.Date(average_usd$Date, format = "%m/%d/%Y")
+
+```
+
+**INTRODUCTION**
+
+USD to AMD relationship is an important attribute in Armenian market. Many products change their price due to the USD fluctuation. Not only in Armenia, but also almost in all over the world it changes a lot of things.
+
+We know that USD to AMD can fluctuate because of outer and inner factors. We have experienced some global problems such as COVID-19 and Russia-Ukrainian war. These factors not only influenced Armenian economy but also it left its footprints on global economy. 
+
+We also have encountered some factors like the 44-day war which also had some influence on USD/AMD relationship and the housing prices of all Armenia.
+
+Considering the above mentioned problems we have created some relationships between USD/AMD fluctuation and housing prices in further sections. 
+
+**Research Methodology and Data informations**
+
+We have got several types of datasets. project.csv is our main dataset that we collected from armstat.am website. The dataset project.csv contains from 2019-2022 Octber data about Housing prices of Districts of Yerevan. We wrote the dataset by hand as everything was written in pdf file. The second dataset is the dollar.xlsx file which represents the USD/AMD exchange rates by month from 2019 to 2022 September. The USD/AMD flactuation data was retrieved from cba.am website. The next dataset named rate.xlsx(this one is also exported from cba.am website) represents the interest rates of loans of Central Bank of Armenia. average.csv and average_$.csv are datasets showing average house prices of Yerevan districts by 1 sqm in AMD and in USD accordingly.
+
+**Hypothesis**
+
+1. COVID-19 decreased Housing prices in AMD.
+
+2. The 44-day Artsakh war decreased Housing prices in AMD.
+
+3. The Russian-Ukrainian war increased Housing prices in USD.
+
+4. A decrease in the USD/AMD rate rises Housing Prices in USD.
+
+5. An interest rate rise will decrease housing prices. 
+
+
+**Analysis**
+
+The graph below shows the USD/AMD exchange rate from January,2019 to September,2022. In the start of 2019 1USD cost 485.79AMD. In September 2022 the rate decreased up to 1USD estimating 409.15AMD.
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(data=dollar, aes(x=Month, y=Monthly, group=1)) +
+                   geom_line(linetype = "dashed", color = "blue", size = 1)+
+                   geom_point(color='red')+theme_economist() + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5))+ylab("USD/AMD")+
+                   scale_y_continuous(breaks = c(400, 450, 500,550))+xlab("Year") + ggtitle("USD AMD Relationship by Year"))
+        
+```
+
+
+The graph below shows USD/AMD relationship in 2019. The exchange rate remained more or less stable. It decreased by 0.01%.
+
+
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(data=dollar, aes(x=Month, y=Monthly, group=1)) +
+geom_line(linetype = "dashed", color = "black", size = 1)+
+        geom_point(color='blue')+theme_classic()+
+        scale_x_date(date_breaks = "1 year", date_labels = "%m.%y", limits =as.Date(c("01/01/2019", "01/12/2019"), format = '%d/%m/%Y'))+
+        theme(axis.text.x = element_blank())+ylab("USD/AMD")+ scale_y_continuous(breaks = c(400, 450, 500))+xlab("Year 2019") + ggtitle("USD/AMD in 2019"))
+```
+
+
+The graph below shows USD/AMD relationship in 2020. The exchange rate increased approximately by 0.816%.
+
+
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(data=dollar, aes(x=Month, y=Monthly, group=1)) +
+        geom_line(linetype = "dashed", color = "black", size = 1)+
+        geom_point(color='blue')+theme_classic()+
+        scale_x_date(date_breaks = "1 year", date_labels = "%m.%y", limits =as.Date(c("01/01/2020", "01/12/2020"), format = '%d/%m/%Y'))+
+        theme(axis.text.x = element_blank())+ylab("USD/AMD")+ scale_y_continuous(breaks = c(400, 450, 500))+xlab("Year 2020") + ggtitle("USD/AMD in 2020"))
+
+```
+
+The graph below shows USD/AMD relationship in 2021. The exchange rate decreased approximately by 0.0691%.
+
+
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(data=dollar, aes(x=Month, y=Monthly, group=1)) +
+        geom_line(linetype = "dashed", color = "black", size = 1)+
+        geom_point(color='blue')+theme_classic()+
+        scale_x_date(date_breaks = "1 year", date_labels = "%m.%y", limits =as.Date(c("01/01/2021", "01/12/2021"), format = '%d/%m/%Y'))+
+        theme(axis.text.x = element_blank())+ylab("USD/AMD")+ scale_y_continuous(breaks = c(450,500,550))+xlab("Year 2021") + ggtitle("USD/AMD in 2021"))
+```
+The graph below shows USD/AMD relationship in 2022. The exchange rate decreased approximately by 0.151%.
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(data=dollar, aes(x=Month, y=Monthly, group=1)) +
+        geom_line(linetype = "dashed", color = "black", size = 1)+
+        geom_point(color='blue')+theme_classic()+
+        scale_x_date(date_breaks = "1 year", date_labels = "%m.%y", limits =as.Date(c("01/01/2022", "01/12/2022"), format = '%d/%m/%Y'))+
+        theme(axis.text.x = element_blank())+ylab("USD/AMD")+ scale_y_continuous(breaks = c(400, 450, 500))+xlab("Year 2022") + ggtitle("USD/AMD in 2022"))
+```
+
+
+
+
+Interest Rate
+Interest rate is a tool that central banks use to control inflation. Like any other type of investment instrument, the value of real estate that generates income is significantly impacted by interest rates. Raising interest rates makes harder for people to borrow money, thus lowering the demand for any products, which also includes real estate.
+
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(data=rate, aes(x=Date, y=Rate, group=1)) +
+        geom_line(color = "purple", size = 1)+
+        geom_point(color='black')+theme_classic() + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5))+ylab("Rate") + ggtitle("Interest Rate from 2019 to 2022"))
+      
+```
+
+This graph shows us the Real Estate Prices of Yerevan by district from 2019 to 2022 and each line represents the price per 1 sqm according to district.
+
+
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(real_estate) + geom_line(aes(Date,Kentron, color = "Kentron")) + 
+        geom_line(aes(Date,Arabkir,color = "Arabkir")) + geom_line(aes(Date,Qanaqer.Zeytun, color = "Qanaqer Zeytun")) + 
+        geom_line(aes(Date,Nor.Norq, color = "Nor Norq")) + geom_line(aes(Date,Avan, color = "Avan"))  + 
+        geom_line(aes(Date,Erebuni,color = "Erebuni")) + geom_line(aes(Date,Shengavit,color = "Shengavit")) + 
+        geom_line(aes(Date,Davtashen, color = "Davtashen"))  + geom_line(aes(Date,Ajapnyak,color = "Ajapnyak")) + 
+        geom_line(aes(Date,Malatia.sebastia,color = "Malatia Sebastia")) + geom_line(aes(Date,Nubarashen,color = "Nubarashen")) + 
+        labs(y = "Price Per 1sqm", x = "Date", title = "Real Estate Prices of Yerevan") + 
+        scale_x_date(date_breaks = "3 month", date_labels = "%m.%y", limits = as.Date(c("01/01/2019", "01/09/2022"), format = '%d/%m/%Y')) + 
+        theme(axis.title.x = element_text(face = "bold"),axis.title.y = element_text(face = "bold"),axis.text.x = element_text( angle = 45), legend.title = element_text(face = "bold"), legend.position = "top",legend.background = element_rect(fill = "White"), plot.title = element_text(face = "bold", size = 15, hjust = 0.5), plot.background = element_rect(fill = "darkgray")) +
+        ylim(c(225000,750000)) + scale_color_manual(name='Districts', breaks=c('Kentron', 'Arabkir', 'Qanaqer Zeytun', 'Nor Norq', 'Avan', 'Erebuni', 'Shengavit', 'Davtashen', 'Ajapnyak', 'Malatia Sebastia', 'Nubarashen'), values=c('Kentron'='pink', 'Arabkir'='blue', 'Qanaqer Zeytun'='purple','Nor Norq'='yellow','Avan'='green','Erebuni'='gray','Shengavit'='dark gray','Davtashen'='black','Ajapnyak'='orange','Malatia Sebastia'='red','Nubarashen'='darkblue')))
+      
+```
+
+
+The below graph shows us the price of houses in Kentron District of Yerevan from 2019 to 2022 years. From this graph we can see how the hypothesis influenced the change of prices of houses per 1sqm.
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(real_estate) + geom_col(aes(Date,Kentron)) + 
+        labs(y = "Price Per 1sqm", x = "Date", title = "Real Estate Prices of Kentron") + 
+        scale_x_date(date_breaks = "3 month", date_labels = "%m.%y", limits = as.Date(c("01/01/2019", "01/09/2022"), format = '%d/%m/%Y')) + 
+        theme(axis.title.x = element_text(face = "bold"),axis.title.y = element_text(face = "bold"),axis.text.x = element_text( angle = 45), legend.title = element_text(face = "bold"), legend.position = "top",legend.background = element_rect(fill = "White"), plot.title = element_text(face = "bold", size = 15, hjust = 0.5), plot.background = element_rect(fill = "darkgray")))
+        
+```
+
+The below graph shows us the price of houses in Arabkir District of Yerevan from 2019 to 2022 years. From this graph we can see how the hypothesis influenced the change of prices of houses per 1sqm.
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(real_estate) + geom_col(aes(Date,Arabkir)) + labs(y = "Price Per 1sqm", x = "Date", title = "Real Estate Prices of Arabkir") + 
+        scale_x_date(date_breaks = "3 month", date_labels = "%m.%y", limits = as.Date(c("01/01/2019", "01/09/2022"), format = '%d/%m/%Y')) + 
+        theme(axis.title.x = element_text(face = "bold"),axis.title.y = element_text(face = "bold"),axis.text.x = element_text( angle = 45), legend.title = element_text(face = "bold"), legend.position = "top",legend.background = element_rect(fill = "White"), plot.title = element_text(face = "bold", size = 15, hjust = 0.5), plot.background = element_rect(fill = "darkgray")))
+```
+
+The below graph shows us the price of houses in Qanaqer Zeytun District of Yerevan from 2019 to 2022 years. From this graph we can see how the hypothesis influenced the change of prices of houses per 1sqm.
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(real_estate) + geom_col(aes(Date,Qanaqer.Zeytun)) + labs(y = "Price Per 1sqm", x = "Date", title = "Real Estate Prices of Qanaqer Zeytun") + 
+        scale_x_date(date_breaks = "3 month", date_labels = "%m.%y", limits = as.Date(c("01/01/2019", "01/09/2022"), format = '%d/%m/%Y')) + 
+        theme(axis.title.x = element_text(face = "bold"),axis.title.y = element_text(face = "bold"),axis.text.x = element_text( angle = 45), legend.title = element_text(face = "bold"), legend.position = "top",legend.background = element_rect(fill = "White"), plot.title = element_text(face = "bold", size = 15, hjust = 0.5), plot.background = element_rect(fill = "darkgray")))
+```
+
+The below graph shows us the price of houses in Nor Norq District of Yerevan from 2019 to 2022 years. From this graph we can see how the hypothesis influenced the change of prices of houses per 1sqm.
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(real_estate) + geom_col(aes(Date,Nor.Norq)) + labs(y = "Price Per 1sqm", x = "Date", title = "Real Estate Prices of Nor Norq") + 
+        scale_x_date(date_breaks = "3 month", date_labels = "%m.%y", limits = as.Date(c("01/01/2019", "01/09/2022"), format = '%d/%m/%Y')) + 
+        theme(axis.title.x = element_text(face = "bold"),axis.title.y = element_text(face = "bold"),axis.text.x = element_text( angle = 45), legend.title = element_text(face = "bold"), legend.position = "top",legend.background = element_rect(fill = "White"), plot.title = element_text(face = "bold", size = 15, hjust = 0.5), plot.background = element_rect(fill = "darkgray")))
+```
+
+The below graph shows us the price of houses in Avan District of Yerevan from 2019 to 2022 years. From this graph we can see how the hypothesis influenced the change of prices of houses per 1sqm.
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ ggplotly(ggplot(real_estate) + geom_col(aes(Date,Avan)) + labs(y = "Price Per 1sqm", x = "Date", title = "Real Estate Prices of Avan") + 
+        scale_x_date(date_breaks = "3 month", date_labels = "%m.%y", limits = as.Date(c("01/01/2019", "01/09/2022"), format = '%d/%m/%Y')) + 
+        theme(axis.title.x = element_text(face = "bold"),axis.title.y = element_text(face = "bold"),axis.text.x = element_text( angle = 45), legend.title = element_text(face = "bold"), legend.position = "top",legend.background = element_rect(fill = "White"), plot.title = element_text(face = "bold", size = 15, hjust = 0.5), plot.background = element_rect(fill = "darkgray")))
+```
+
+The below graph shows us the price of houses in Erebuni District of Yerevan from 2019 to 2022 years. From this graph we can see how the hypothesis influenced the change of prices of houses per 1sqm.
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(real_estate) + geom_col(aes(Date,Erebuni)) + labs(y = "Price Per 1sqm", x = "Date", title = "Real Estate Prices of Erebuni") + 
+        scale_x_date(date_breaks = "3 month", date_labels = "%m.%y", limits = as.Date(c("01/01/2019", "01/09/2022"), format = '%d/%m/%Y')) + 
+        theme(axis.title.x = element_text(face = "bold"),axis.title.y = element_text(face = "bold"),axis.text.x = element_text( angle = 45), legend.title = element_text(face = "bold"), legend.position = "top",legend.background = element_rect(fill = "White"), plot.title = element_text(face = "bold", size = 15, hjust = 0.5), plot.background = element_rect(fill = "darkgray")))
+```
+The below graph shows us the price of houses in Shengavit District of Yerevan from 2019 to 2022 years. From this graph we can see how the hypothesis influenced the change of prices of houses per 1sqm.
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(real_estate) + geom_col(aes(Date,Shengavit)) + labs(y = "Price Per 1sqm", x = "Date", title = "Real Estate Prices of Shengavit") + 
+        scale_x_date(date_breaks = "3 month", date_labels = "%m.%y", limits = as.Date(c("01/01/2019", "01/09/2022"), format = '%d/%m/%Y')) + 
+        theme(axis.title.x = element_text(face = "bold"),axis.title.y = element_text(face = "bold"),axis.text.x = element_text( angle = 45), legend.title = element_text(face = "bold"), legend.position = "top",legend.background = element_rect(fill = "White"), plot.title = element_text(face = "bold", size = 15, hjust = 0.5), plot.background = element_rect(fill = "darkgray")))
+
+```
+The below graph shows us the price of houses in Davtashen District of Yerevan from 2019 to 2022 years. From this graph we can see how the hypothesis influenced the change of prices of houses per 1sqm.
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(real_estate) + geom_col(aes(Date,Davtashen)) + labs(y = "Price Per 1sqm", x = "Date", title = "Real Estate Prices of Davtashen") + 
+        scale_x_date(date_breaks = "3 month", date_labels = "%m.%y", limits = as.Date(c("01/01/2019", "01/09/2022"), format = '%d/%m/%Y')) + 
+        theme(axis.title.x = element_text(face = "bold"),axis.title.y = element_text(face = "bold"),axis.text.x = element_text( angle = 45), legend.title = element_text(face = "bold"), legend.position = "top",legend.background = element_rect(fill = "White"), plot.title = element_text(face = "bold", size = 15, hjust = 0.5), plot.background = element_rect(fill = "darkgray")))
+
+```
+The below graph shows us the price of houses in Ajapnyak District of Yerevan from 2019 to 2022 years. From this graph we can see how the hypothesis influenced the change of prices of houses per 1sqm.
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(real_estate) + geom_col(aes(Date,Ajapnyak)) + labs(y = "Price Per 1sqm", x = "Date", title = "Real Estate Prices of Ajapnyak") + 
+        scale_x_date(date_breaks = "3 month", date_labels = "%m.%y", limits = as.Date(c("01/01/2019", "01/09/2022"), format = '%d/%m/%Y')) + 
+        theme(axis.title.x = element_text(face = "bold"),axis.title.y = element_text(face = "bold"),axis.text.x = element_text( angle = 45), legend.title = element_text(face = "bold"), legend.position = "top",legend.background = element_rect(fill = "White"), plot.title = element_text(face = "bold", size = 15, hjust = 0.5), plot.background = element_rect(fill = "darkgray")))
+
+```
+The below graph shows us the price of houses in Malatia Sebastia  District of Yerevan from 2019 to 2022 years. From this graph we can see how the hypothesis influenced the change of prices of houses per 1sqm.
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(real_estate) + geom_col(aes(Date,Malatia.sebastia)) + labs(y = "Price Per 1sqm", x = "Date", title = "Real Estate Prices of Malatia Sebastia") + 
+        scale_x_date(date_breaks = "3 month", date_labels = "%m.%y", limits = as.Date(c("01/01/2019", "01/09/2022"), format = '%d/%m/%Y')) + 
+        theme(axis.title.x = element_text(face = "bold"),axis.title.y = element_text(face = "bold"),axis.text.x = element_text( angle = 45), legend.title = element_text(face = "bold"), legend.position = "top",legend.background = element_rect(fill = "White"), plot.title = element_text(face = "bold", size = 15, hjust = 0.5), plot.background = element_rect(fill = "darkgray")))
+
+```
+The below graph shows us the price of houses in Nubarashen District of Yerevan from 2019 to 2022 years. From this graph we can see how the hypothesis influenced the change of prices of houses per 1sqm.
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplotly(ggplot(real_estate) + geom_col(aes(Date,Nubarashen)) + labs(y = "Price Per 1sqm", x = "Date", title = "Real Estate Prices of Nubarashen") + 
+        scale_x_date(date_breaks = "3 month", date_labels = "%m.%y", limits = as.Date(c("01/01/2019", "01/09/2022"), format = '%d/%m/%Y')) + 
+        theme(axis.title.x = element_text(face = "bold"),axis.title.y = element_text(face = "bold"),axis.text.x = element_text( angle = 45), legend.title = element_text(face = "bold"), legend.position = "top",legend.background = element_rect(fill = "White"), plot.title = element_text(face = "bold", size = 15, hjust = 0.5), plot.background = element_rect(fill = "darkgray")))
+
+```
+
+
+Real Estate Prices and USD/AMD correlation
+This graph shows the relationship between prices in USD and USD/AMD rate. We can clearly see an inverse relationship between the two.
+
+
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplot() +
+    geom_line(data = average_usd, aes(x = Date, y = Average,color='Real Estate Prices')) +
+    geom_line(data = dollar, aes(x = Month, y = Monthly*2,color='USD/AMD')) + 
+    scale_y_continuous(name = "USD", sec.axis = sec_axis(~./2,name="AMD"))+scale_x_date(date_breaks = "1 year", date_labels = "%m.%y", limits =as.Date(c("01/01/2019", "01/12/2022"), format = '%d/%m/%Y'))+
+  scale_color_manual(name='Category',
+                     breaks=c( 'Real Estate Prices','USD/AMD'),
+                     values=c('Real Estate Prices'='purple','USD/AMD'='black'))+ggtitle("Real Estate Prices and USD/AMD correlation")+
+  xlab("Date")+theme_clean()
+
+```
+
+
+Real Estate Prices and USD/AMD correlation
+We showed real estate prices in AMD and Interest rate correlation. We can see on the left y axis price in USD and on the right y axis we can see Interest rate changes. We can multiply the number by 100 to get the percentage to understand better. 
+
+
+```{r warning=FALSE, echo=FALSE, fig.height = 7, fig.width = 20}
+ggplot() +
+        geom_line(data = average, aes(x = V1, y = V2,color='Real Estate Prices')) +
+        geom_line(data = rate, aes(x = Date, y = Rate*5000000,color='Rate')) + 
+        scale_y_continuous(name = "AMD", sec.axis = sec_axis(~./9000000, name = "Percentage"))+scale_x_date(date_breaks = "1 year", date_labels = "%m.%y", limits =as.Date(c("01/01/2019", "01/12/2022"), format = '%d/%m/%Y'))+
+        scale_color_manual(name='Category',
+                           breaks=c( 'Real Estate Prices','Rate'),
+                           values=c('Real Estate Prices'='red','Rate'='blue'))+ggtitle("Real Estate Prices and Rate correlation")+
+        xlab("Date")+theme_clean()
+
+```
+
+**Coclusion**
+
+From all the above graphs we can see that housing prices eventually went up and now they are on their peak price per 1 sqm. When we analyze our graphs from period to period we can see that during the 2020 first 6 months(During the Covid-19 attack) the housing prices of Yerevan District by District have been reduced, so our 1st hypothesis is approved. During the next period of 2020 year we had the 44-day war and its consequences not only affected our economy, but also reduced the housing prices, so our hypotheses 2 is approved by looking at the above graphs. The 3rd hypotheses is about the Russia-Ukrainian war which also has influenced the Armenian market positively. During that period which is the year 2022 we have had prices up and still we have these prices. 
+From the USD/AMD and Real Estate price correlation we can see that they are inversely correlated and that is perfectly normal. We know that housing prices in Yerevan are in USD but as purchasing in USD is not permitted in Armenia people have to put the price in AMD. and whenever the rate goes up real estate prices go down and the opposite is also true. We can view the following example. An apartment is 1000$ per square meter and at that time the rate is 500 AMD, so that make the square meter 500000 AMD. However if the rate goes down to 450 for example, 1000 USD will be 450000 AMD, which is lower then the initial value, so the person increases the price in USD to approximately 1111 USD. So our hypothesis is not rejected and USD/AMD and Real Estate Prices are universally correlated.
+Generally speaking in the whole world interest rate is inversely correlated to real estate prices, however we see a different picture in our graph, so we can reject our hypothesis. But we can confidentially say that rise in Real estate prices is connected with lots of Russians coming to Yerevan and people seeing a lot of opportunity to earn money and just increase the prices.
+
+**Publication Link**
+
+https://realestateprices.shinyapps.io/Real_Estate_Prices/
+
+
+**Reference List**
+
+1. https://cba.am
+
+2. https://armstat.am
